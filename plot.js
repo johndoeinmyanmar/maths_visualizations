@@ -3,13 +3,14 @@ function Plot(){
 	this.y = [];
 	this.strokeStyle = '#ffffff';
 	this.lineWidth = 2;
+	this.offset = 0;
 }
 
 Plot.prototype.draw = function (context, plane){
 
 	context.save();
 	var ppi = plane.ppi
-	var cx = plane.centerX + 150;
+	var cx = plane.centerX + this.offset;
 	var cy = plane.centerY;
 
 	context.beginPath();
