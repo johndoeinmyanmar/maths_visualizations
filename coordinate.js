@@ -23,11 +23,19 @@ XYPlane.prototype.draw = function (context){
 	context.lineTo(this.centerX, this.height);
 	context.stroke();
 
+	// draw x, y labels
+	context.beginPath();
+	context.fillStyle = '#ffffff';
+	context.font = '20px Arial';
+	context.fillText('x', this.width-10, this.centerY-5);
+	context.fillText('y', this.centerX-10, 10);
+
 	// draw grid
 	context.strokeStyle = this.gridcolor;
 	context.lineWidth = 1;
 
 	context.beginPath();
+	context.font = '10px Arial';
 	var rightx = 1;
 	for (let t=this.centerX+this.ppi; t < this.width; t=t+this.ppi){
 		context.moveTo(t, 0);
