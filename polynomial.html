@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>Polynomial</title>
+	<style>
+		canvas{
+			background-color: black;
+		}
+		#poly_gui{
+			position: absolute;
+			top:290px;
+			left: 250px;
+		}
+	</style>
+	<script type="text/javascript" src="coordinate.js"></script>
+	<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.7.6/dat.gui.js"></script>
+</head>
+<body>
+<canvas id='canvas' width="500" height="400"></canvas>
+<div id='control'></div>
+<script>
+	window.onload = function(){
+		var canvas = document.getElementById('canvas');
+		var context = canvas.getContext('2d');
+
+		canvas.addEventListener('wheel', zoom, false );
+		var powers = new function(){
+			this.power = 1;
+			this.x_offset = 0;
+			this.y_offset = 0;
+		};
+
+		var gui = new dat.GUI({autoPlace: false})
+		gui.add(powers, 'power', 1, 5).step(1);
+		gui.add(powers, 'x_offset',-5, 5);
+		gui.add(powers, 'y_offset',-5, 5);
+		gui.domElement.id = 'poly_gui';
+		document.getElementById('control').appendChild(gui.domElement);
+
+
+
+		var plane = new XYPlane(canvas);
+		plane.centerX = canvas.width / 2;
+		plane.centerY = canvas.height / 2;
+		plane.draw(context);
+		
+		var plot = new Plot();
+
+		for (let i =-10; i < 10; i+=0.1){
+			plot.x.push(i);
+			plot.y.push((i-powers.x_offset)**powers.power+powers.y_offset);
+		}
+
+		plot.draw(context, plane);
+
+		function zoom(e){
+			if (e.deltaY > 0){
+				plane.ppi += 1;
+				if (plane.ppi > 60){
+					plane.ppi = 30;
+					plane.zoom_factor /= 2;
+				}
+			}else{
+				plane.ppi -= 1;
+				if (plane.ppi < 25){
+					plane.ppi = 30;
+					plane.zoom_factor *= 2;
+				}
+			
+			}
+		}
+
+		function status(context){
+			context.save();
+			context.beginPath();
+			context.font = '20px Arial';
+			context.fillStyle = '#ffffff';
+			var label = 'y = (x-'+powers.x_offset.toFixed(2) + ')^' + powers.power + '+' + powers.y_offset.toFixed(2);
+			context.fillText(label, 10,25 ); 
+			context.fill();
+			context.restore();
+		}
+
+		function drawframe(){
+			window.requestAnimationFrame(drawframe);
+			context.clearRect(0, 0, canvas.width, canvas.height);
+			plane.draw(context);
+			status(context);
+			for (let i =-10; i < 10; i+=0.1){
+				plot.y.push((i-powers.x_offset)**powers.power+ powers.y_offset);
+
+			}
+
+			plot.draw(context, plane);
+			plot.y = [];
+		}
+		 drawframe();
+
+	}
+
+</script>
+
+</body>
+</html>
