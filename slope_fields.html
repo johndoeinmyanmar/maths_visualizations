@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>Drawing Slopes</title>
+	<script type="text/javascript" src="slope.js"></script>
+	<script type="text/javascript" src="coordinate.js"></script>
+	<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.7.6/dat.gui.js"></script>
+	<script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+	<script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+	<style>
+		canvas {
+			background-color: black;
+		}
+		#gui_control{
+			position: absolute;
+			top: 330px;
+			left: 260px;
+		}
+	</style>
+</head>
+<body>
+<canvas id='canvas' width="500" height="400"></canvas>
+<div id='parameters'></div>
+<script>
+	window.onload = function (){
+		var canvas = document.getElementById('canvas');
+		var ctx = canvas.getContext('2d');
+
+
+		var plane = new XYPlane(canvas);
+		plane.grid = false;
+		plane.centerX = canvas.width / 2;
+		plane.centerY = canvas.height / 2;
+		plane.draw(ctx);
+
+		var parameters = new function(){
+			this.a = -10;
+			this.equations = 0 ;
+		};
+
+		var gui = new dat.GUI();
+		gui.add(parameters, 'equations',{
+				"y' = y(a - y)": 0,
+				"y' = x - ay" : 1,
+				"y' = ax / y": 2, 
+				"y' = y^2 - ax^2": 3,
+				"y' = ay / x": 4,
+				"y' = y^3 - ay - x": 5,
+				"y' = (x+2y)(x-y)": 6
+			} );
+		gui.add(parameters, 'a', -10, 10);
+		gui.domElement.id = 'gui_control';
+		document.getElementById('parameters').appendChild(gui.domElement);
+
+
+		var slope_line = new SlopeLine(100, 100);
+		slope_line.pivot = false;
+		slope_line.length = 20;
+		slope_line.draw(ctx, 0);
+
+
+		var diff_equations = [diff_equ0, diff_equ1, diff_equ2, diff_equ3, diff_equ4, diff_equ5, diff_equ6];
+	
+		function diff_equ0(x, y){
+			return y*(parameters.a-y);
+		}
+
+		function diff_equ1(x, y){
+			return x - (parameters.a*y);
+		}
+
+		function diff_equ2(x,y){
+			return (parameters.a*x)/y;
+		}
+
+		function diff_equ3(x,y){
+			return y**2 - parameters.a*x**2;
+		}
+
+		function diff_equ4(x,y){
+			return (parameters.a*y) / x;
+		}
+
+		function diff_equ5(x,y){
+			return y**3 - parameters.a*y - x;
+		}
+
+		function diff_equ6(x,y){
+			return (x+2*y)*(x-y);
+		}
+
+
+		function drawFrame(){
+			window.requestAnimationFrame(drawFrame);
+			ctx.clearRect(0,0, canvas.width, canvas.height);
+			plane.draw(ctx);
+			for (let x=-10; x< 10; x+=0.6){
+				for(let y=-10; y<10; y+=0.6){
+					var slope = diff_equations[parameters.equations](x,y)
+					slope_line.y = plane.centerY - y*plane.ppi;
+					slope_line.x = plane.centerX + x*plane.ppi;
+					slope_line.draw(ctx, slope);
+				}
+			}
+		}
+
+		drawFrame();
+		
+		
+
+	};
+</script>
+</body>
+</html>
